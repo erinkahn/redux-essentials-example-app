@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { postAdded } from "./postsSlice";
 import { useDispatch } from "react-redux"; // update story 
-import { nanoid } from "@reduxjs/toolkit"; // generates random ID
 
 export const AddNewPostForm = () => {
     const [title, setTitle] = useState('');
@@ -14,12 +13,7 @@ export const AddNewPostForm = () => {
 
     const onSavePostClicked = () => {
         if (title && content) {
-            dispatch(postAdded({ // dispatch action - click/add post
-                id: nanoid(),
-                title,
-                content
-            }))
-
+            dispatch(postAdded(title, content))
             setTitle('')
             setContent('')
         }
