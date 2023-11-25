@@ -2,6 +2,7 @@
 // where the 123 part is ID of the post we want to show.
 import { useSelector } from "react-redux"; // get post data from store
 import { Link } from "react-router-dom";
+import { PostAuthor } from "./PostAuthor";
 
 export const SinglePostPage = ({ match }) => { // match object contains URL info we need
     const { postId } = match.params; // read value of postId
@@ -20,6 +21,7 @@ export const SinglePostPage = ({ match }) => { // match object contains URL info
         <section>
             <article>
                 <h2>{post.title}</h2>
+                <PostAuthor userId={post.user} />
                 <p className="post-content">{post.content}</p>
                 <Link to={`/editPost/${post.id}`} className="button">Edit Post</Link>
             </article>

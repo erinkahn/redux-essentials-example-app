@@ -7,13 +7,13 @@ export const AddNewPostForm = () => {
     const [content, setContent] = useState('');
     const [userId, setUserId] = useState('');
 
-    const onTitleChange = e => setTitle(e.target.value);
-    const onContentChange = e => setContent(e.target.value);
-    const onAuthorChanged = e => setUserId(e.target.value);
-
     const dispatch = useDispatch();
 
     const users = useSelector(state => state.users);
+
+    const onTitleChange = e => setTitle(e.target.value);
+    const onContentChange = e => setContent(e.target.value);
+    const onAuthorChanged = e => setUserId(e.target.value);
 
     const onSavePostClicked = () => {
         if (title && content) {
