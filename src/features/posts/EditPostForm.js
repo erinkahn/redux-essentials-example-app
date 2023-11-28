@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom"; //switch to single post page and show that page
-import { postEdited } from "./postsSlice";
+import { postEdited, selectPostById } from "./postsSlice";
 
 export const EditPostForm = ({match}) => { // match object contains URL info we need
     const { postId } = match.params; // read value of postId
 
-    const post = useSelector(state => state.posts.find(post => post.id === postId)) // find post object from store
+    const post = useSelector(state => selectPostById(state, postId)) // find post object from store
 
     const [title, setTitle] = useState(post.title);
     const [content, setContent] = useState(post.content);

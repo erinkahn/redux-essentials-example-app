@@ -4,11 +4,12 @@ import { useSelector } from "react-redux"; // get post data from store
 import { Link } from "react-router-dom";
 import { PostAuthor } from "./PostAuthor";
 import { ReactionButtons } from "./ReactionButtons";
+import { selectPostById } from "./postsSlice";
 
 export const SinglePostPage = ({ match }) => { // match object contains URL info we need
     const { postId } = match.params; // read value of postId
 
-    const post = useSelector(state => state.posts.find(post => post.id === postId)) // find post object from store
+    const post = useSelector(state => selectPostById(state, postId)) // find post object from store
 
     if (!post) { // if user types url directly and post doesnt exist
         return (
@@ -28,7 +29,7 @@ export const SinglePostPage = ({ match }) => { // match object contains URL info
                 <p className="post-content">{post.content}</p>
 
                 <ReactionButtons post={post} />
-                
+
                 <Link to={`/editPost/${post.id}`} className="button">Edit Post</Link>
             </article>
         </section>

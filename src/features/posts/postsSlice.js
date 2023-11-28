@@ -1,25 +1,30 @@
 // createSlice function makes a reducer function that knows how to handle our posts data. 
-import { createSlice } from "@reduxjs/toolkit";
-import { nanoid } from "@reduxjs/toolkit"; // generates random ID
-import {sub} from 'date-fns';
+import { createSlice, nanoid, createAsyncThunk } from "@reduxjs/toolkit"; //nanoid makes random ID
+import { client } from "../../api/client";
 
 // initial posts array
-const initialState = [
-    { 
-        id: '1',
-        title: 'First post!', 
-        content: 'hi, world!',
-        date: sub(new Date(), { minutes: 10 }).toISOString(),
-        reactions: {thumbsUp: 0, hooray: 0, heart: 0, rocket: 0, eyes: 0}
-    },
-    { 
-        id: '2',
-        title: 'Second post!',
-        content: 'hi again, world!',
-        date: sub(new Date(), { minutes: 5 }).toISOString(), 
-        reactions: {thumbsUp: 0, hooray: 0, heart: 0, rocket: 0, eyes: 0}
+const initialState = {
+    posts: [],
+    status: 'idle',
+    error: null
+}
+
+// fetch data with createSyncThunk API
+export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
+    const response = await client.get('/fakeApi/posts');
+    return response.data;
+})
+
+export const addNewPost = createAsyncThunk(
+    'posts/addNewPost',
+    // The payload creator receives the partial `{title, content, user}` object
+    async initialPost => {
+        // send the initial data to the fake API server
+        const response = await client.post('/fakeApi/posts', initialPost)
+        // The response includes the complete post object, including unique ID
+        return response.data
     }
-]
+)
 
 // pass createSlice - lets us write "mutating" logic in our reducers
 // Every time we create a new slice, we need to add its reducer function to our Redux store so go add that in store.js
@@ -29,7 +34,7 @@ const postsSlice = createSlice({
     reducers: { // to add posts, need reducer function inside this object
         reactionAdded(state, action) {
             const {postId, reaction} = action.payload;
-            const existingPost = state.find(post => post.id === postId);
+            const existingPost = state.posts.find(post => post.id === postId);
             if (existingPost) {
                 existingPost.reactions[reaction]++
             }
@@ -39,7 +44,7 @@ const postsSlice = createSlice({
         // },
         postAdded: {
             reducer(state, action) {
-              state.push(action.payload)
+              state.posts.push(action.payload)
             },
             prepare(title, content, userId) {
               return {
@@ -55,12 +60,31 @@ const postsSlice = createSlice({
         },
         postEdited(state, action) {
             const {id, title, content} = action.payload;
-            const existingPost = state.find(post => post.id === id);
+            const existingPost = state.posts.find(post => post.id === id);
             if (existingPost) {
                 existingPost.title = title;
                 existingPost.content = content;
             }
         }
+    },
+    extraReducers(builder) { // builder object provides methods that let us define additional case reducers that will run in response to actions defined outside of the slice
+        builder
+            .addCase(fetchPosts.pending, (state, action) => {
+                state.status = 'loading'
+            })
+            .addCase(fetchPosts.fulfilled, (state, action) => {
+                state.status = 'succeeded'
+                // Add any fetched posts to the array
+                state.posts = state.posts.concat(action.payload)
+            })
+            .addCase(fetchPosts.rejected, (state, action) => {
+                state.status = 'failed'
+                state.error = action.error.message
+            })
+        builder.addCase(addNewPost.fulfilled, (state, action) => {
+            // add the new post object to our posts array
+            state.posts.push(action.payload)
+        })
     } 
 })
 
@@ -68,3 +92,7 @@ export const { postAdded, postEdited, reactionAdded } = postsSlice.actions // ex
 
 // export the posts reducer function createSlice generated
 export default postsSlice.reducer
+
+export const selectAllPosts = state => state.posts.posts;
+
+export const selectPostById = (state, postId) => state.posts.posts.find(post => post.id === postId);
